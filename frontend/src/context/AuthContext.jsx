@@ -10,11 +10,19 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (token) {
-      // Decode token to get basic user info for now (in a real app, hit a /me endpoint)
       try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        // Pad the base64 string to a multiple of 4
+        const pad = base64.length % 4 === 0 ? '' : '='.repeat(4 - (base64.length % 4));
+        const jsonPayload = decodeURIComponent(window.atob(base64 + pad).split('').map(c =>
+          '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+        ).join(''));
+
+        const payload = JSON.parse(jsonPayload);
         setUser({ email: payload.sub, role: payload.role });
       } catch (e) {
+        console.error("Token decoding failed:", e);
         setToken(null);
         localStorage.removeItem('token');
       }

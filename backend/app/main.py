@@ -1,12 +1,6 @@
-import os
-import sys
-
-if __package__ in {None, ""}:
-    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import auth, profiles
+from app.api import auth, profiles, medicines, reminders
 
 app = FastAPI(title="PillSync API", version="1.0.0")
 
@@ -20,13 +14,9 @@ app.add_middleware(
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(profiles.router, prefix="/profiles", tags=["profiles"])
+app.include_router(medicines.router, prefix="/medicines", tags=["medicines"])
+app.include_router(reminders.router, prefix="/reminders", tags=["reminders"])
 
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the PillSync API"}
-
-
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=False)

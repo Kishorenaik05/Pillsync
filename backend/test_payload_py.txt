@@ -1,0 +1,2 @@
+MED: 201 - {"name":"Test Nulls","form":"","strength":"","quantity_in_stock":0,"id":"571b150d-fc51-45ff-a128-4d3628832daa","patient_id":"9d1510fd-9864-4ef2-a1fe-942410775f98","created_at":"2026-07-23T17:58:24.365628+05:30","updated_at":"2026-07-23T17:58:24.365628+05:30"}
+SCHED: 201 - {"frequency":"Daily","time_of_day":"12:00:00","start_date":"2023-01-01","end_date":null,"id":"f2d62c96-7ca0-4529-ba01-f61faf5ce0a5","medicine_id":"571b150d-fc51-45ff-a128-4d3628832daa","created_at":"2026-07-23T17:58:26.611028+05:30"}
