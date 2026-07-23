@@ -18,7 +18,7 @@ export default function PatientDashboard() {
     try {
       const response = await api.get('/profiles/patient/me');
       setProfile(response.data);
-      
+
       const remindersRes = await api.get('/reminders/today');
       setReminders(remindersRes.data);
     } catch (err) {
@@ -32,7 +32,7 @@ export default function PatientDashboard() {
 
   useEffect(() => {
     fetchProfileAndReminders();
-    
+
     // Check initial notification permission
     if ('Notification' in window && Notification.permission === 'granted') {
       setNotificationEnabled(true);
@@ -84,14 +84,17 @@ export default function PatientDashboard() {
     const data = {
       first_name: formData.get('first_name'),
       last_name: formData.get('last_name'),
-      date_of_birth: formData.get('dob'),
+      date_of_birth: formData.get('dob') || null,
       blood_group: formData.get('blood_group')
     };
     try {
       const response = await api.post('/profiles/patient/me', data);
       setProfile(response.data);
     } catch (err) {
-      alert('Failed to create profile');
+      console.error('Profile creation error:', err.response?.data || err);
+      const errorMessage = err.response?.data?.detail || 'Failed to create profile';
+      const detailString = typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage);
+      alert(`Error: ${detailString}`);
     }
   };
 
@@ -119,7 +122,7 @@ export default function PatientDashboard() {
 
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          
+
           <div className="col-span-1">
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
               <div className="p-6">
@@ -167,7 +170,7 @@ export default function PatientDashboard() {
                       </button>
                     )}
                     {profile && (
-                      <button 
+                      <button
                         onClick={() => setIsModalOpen(true)}
                         className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary/90 focus:outline-none"
                       >
@@ -177,7 +180,7 @@ export default function PatientDashboard() {
                     )}
                   </div>
                 </div>
-                
+
                 {reminders.length === 0 ? (
                   <div className="rounded-md bg-blue-50 p-4 border border-blue-100">
                     <p className="text-sm text-blue-700">No medications scheduled for today.</p>
@@ -193,23 +196,23 @@ export default function PatientDashboard() {
                         <div>
                           {reminder.status === 'PENDING' ? (
                             <div className="flex space-x-2">
-                              <button 
+                              <button
                                 onClick={async () => {
                                   try {
                                     await api.post(`/reminders/${reminder.schedule_id}/log`, { status: 'TAKEN', scheduled_time: new Date().toISOString() });
                                     fetchProfileAndReminders();
-                                  } catch(e) { alert('Error logging'); }
+                                  } catch (e) { alert('Error logging'); }
                                 }}
                                 className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700"
                               >
                                 <Check className="h-3 w-3 mr-1" /> Take
                               </button>
-                              <button 
+                              <button
                                 onClick={async () => {
                                   try {
                                     await api.post(`/reminders/${reminder.schedule_id}/log`, { status: 'MISSED', scheduled_time: new Date().toISOString() });
                                     fetchProfileAndReminders();
-                                  } catch(e) { alert('Error logging'); }
+                                  } catch (e) { alert('Error logging'); }
                                 }}
                                 className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200"
                               >
@@ -239,14 +242,14 @@ export default function PatientDashboard() {
               </div>
             </div>
           </div>
-          
+
         </div>
       </main>
 
-      <AddMedicationModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        onAdded={() => fetchProfileAndReminders()} 
+      <AddMedicationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onAdded={() => fetchProfileAndReminders()}
       />
     </div>
   );
