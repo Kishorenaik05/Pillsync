@@ -29,20 +29,24 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          
+
           <Route path="/dashboard/patient" element={
             <ProtectedRoute allowedRoles={['PATIENT']}>
               <PatientDashboard />
             </ProtectedRoute>
           } />
-          
+
           <Route path="/dashboard/caregiver" element={
             <ProtectedRoute allowedRoles={['CAREGIVER']}>
               <CaregiverDashboard />
             </ProtectedRoute>
           } />
 
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/" element={
+            <ProtectedRoute>
+              <Navigate to="/dashboard/patient" replace />
+            </ProtectedRoute>
+          } />
         </Routes>
       </Router>
     </AuthProvider>

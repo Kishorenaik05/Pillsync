@@ -1,0 +1,2 @@
+USERJSON: {"id":"e05fabc2-b819-4655-a2e2-07154682a524", "email":"test_user_6896@example.com", "role":"PATIENT"}
+PROFILE: None
