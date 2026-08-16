@@ -1,4 +1,0 @@
-CREATE MED STATUS: 201
-CREATE MED RESP: {"name":"Test Med API","form":"Tablet","strength":"100mg","quantity_in_stock":30,"id":"56197039-a01a-4890-a6fc-0f48ddae24f0","patient_id":"9d1510fd-9864-4ef2-a1fe-942410775f98","created_at":"2026-07-23T17:56:17.388138+05:30","updated_at":"2026-07-23T17:56:17.388138+05:30"}
-CREATE SCHED STATUS: 201
-CREATE SCHED RESP: {"frequency":"Daily","time_of_day":"10:00:00","start_date":"2023-01-01","end_date":null,"id":"710c0b67-162d-4aec-a61e-7332b121e963","medicine_id":"56197039-a01a-4890-a6fc-0f48ddae24f0","created_at":"2026-07-23T17:56:19.554655+05:30"}

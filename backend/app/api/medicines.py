@@ -13,98 +13,76 @@ def get_patient_id(user_id: str, cur):
         raise HTTPException(status_code=400, detail="Patient profile not found. Please create one first.")
     return profile[0]
 
-@router.post("/", response_model=MedicineResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED)
 def create_medicine(
-    medicine_in: MedicineCreate,
+    payload: dict,
     current_user: dict = Depends(require_role("PATIENT"))
 ):
     with get_db_connection() as conn:
         with conn.cursor() as cur:
-            patient_id = get_patient_id(current_user["id"], cur)
+            try:
+                patient_id = get_patient_id(current_user["id"], cur)
+            except HTTPException:
+                cur.execute(
+                    """
+                    INSERT INTO patient_profiles (user_id, first_name, last_name, date_of_birth, gender, blood_group, medical_history)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    RETURNING id
+                    """,
+                    (current_user["id"], "User", "", "2000-01-01", "Other", "Unknown", "[]")
+                )
+                patient_id = cur.fetchone()[0]
+
+            name = payload.get("name")
+            if not name:
+                raise HTTPException(status_code=400, detail="Medicine name is required")
+                
+            dosage = payload.get("dosage") or payload.get("strength")
+            quantity = payload.get("quantity") or payload.get("quantity_in_stock") or 0
+            form_val = payload.get("instructions") or payload.get("form") or ""
             
             cur.execute(
                 """
-                INSERT INTO medicines (patient_id, name, form, strength, quantity_in_stock)
+                INSERT INTO medicines (patient_id, name, strength, quantity_in_stock, form)
                 VALUES (%s, %s, %s, %s, %s)
                 RETURNING id, patient_id, name, form, strength, quantity_in_stock, created_at, updated_at
                 """,
-                (
-                    patient_id,
-                    medicine_in.name,
-                    medicine_in.form,
-                    medicine_in.strength,
-                    medicine_in.quantity_in_stock
-                )
+                (patient_id, name, dosage, int(quantity), form_val)
             )
-            new_medicine = cur.fetchone()
+            med_row = cur.fetchone()
+            medicine_id = med_row[0]
+            
+            # If payload has scheduling fields (Pattern A)
+            frequency = payload.get("frequency")
+            start_date = payload.get("start_date")
+            if frequency and start_date:
+                import re
+                times = []
+                m = re.match(r'^\[(.*?)\]', form_val)
+                if m:
+                    times = [t.strip() for t in m.group(1).split(",") if t.strip()]
+                
+                for t in times:
+                    cur.execute(
+                        """
+                        INSERT INTO medication_schedules (medicine_id, frequency, time_of_day, start_date, end_date)
+                        VALUES (%s, %s, %s, %s, %s)
+                        """,
+                        (medicine_id, str(frequency), f"{t}:00", start_date, payload.get("end_date") or None)
+                    )
+            
             conn.commit()
             
             return {
-                "id": new_medicine[0],
-                "patient_id": new_medicine[1],
-                "name": new_medicine[2],
-                "form": new_medicine[3],
-                "strength": new_medicine[4],
-                "quantity_in_stock": new_medicine[5],
-                "created_at": new_medicine[6],
-                "updated_at": new_medicine[7]
+                "id": str(medicine_id),
+                "patient_id": str(med_row[1]),
+                "name": med_row[2],
+                "form": med_row[3],
+                "strength": med_row[4],
+                "quantity_in_stock": med_row[5],
+                "created_at": med_row[6],
+                "updated_at": med_row[7]
             }
-
-@router.get("/", response_model=list[MedicineWithSchedules])
-def get_medicines(current_user: dict = Depends(require_role("PATIENT"))):
-    with get_db_connection() as conn:
-        with conn.cursor() as cur:
-            patient_id = get_patient_id(current_user["id"], cur)
-            
-            cur.execute(
-                """
-                SELECT id, patient_id, name, form, strength, quantity_in_stock, created_at, updated_at
-                FROM medicines
-                WHERE patient_id = %s
-                ORDER BY created_at DESC
-                """,
-                (patient_id,)
-            )
-            medicines = cur.fetchall()
-            
-            result = []
-            for med in medicines:
-                med_dict = {
-                    "id": med[0],
-                    "patient_id": med[1],
-                    "name": med[2],
-                    "form": med[3],
-                    "strength": med[4],
-                    "quantity_in_stock": med[5],
-                    "created_at": med[6],
-                    "updated_at": med[7],
-                    "schedules": [] # We can fetch schedules if needed, keeping it empty for now or query them
-                }
-                
-                # Fetch schedules for this medicine
-                cur.execute(
-                    """
-                    SELECT id, medicine_id, frequency, time_of_day, start_date, end_date, created_at
-                    FROM medication_schedules
-                    WHERE medicine_id = %s
-                    """,
-                    (med_dict["id"],)
-                )
-                schedules = cur.fetchall()
-                for sch in schedules:
-                    med_dict["schedules"].append({
-                        "id": sch[0],
-                        "medicine_id": sch[1],
-                        "frequency": sch[2],
-                        "time_of_day": sch[3],
-                        "start_date": sch[4],
-                        "end_date": sch[5],
-                        "created_at": sch[6]
-                    })
-                    
-                result.append(med_dict)
-                
-            return result
 
 @router.post("/{medicine_id}/schedules", response_model=MedicationScheduleResponse, status_code=status.HTTP_201_CREATED)
 def create_schedule(
@@ -135,15 +113,88 @@ def create_schedule(
                     schedule_in.end_date
                 )
             )
-            new_schedule = cur.fetchone()
+            row = cur.fetchone()
             conn.commit()
             
             return {
-                "id": new_schedule[0],
-                "medicine_id": new_schedule[1],
-                "frequency": new_schedule[2],
-                "time_of_day": new_schedule[3],
-                "start_date": new_schedule[4],
-                "end_date": new_schedule[5],
-                "created_at": new_schedule[6]
+                "id": row[0],
+                "medicine_id": row[1],
+                "frequency": row[2],
+                "time_of_day": row[3],
+                "start_date": row[4],
+                "end_date": row[5],
+                "created_at": row[6]
             }
+
+@router.put("/{medicine_id}")
+def update_medicine(medicine_id: str, payload: dict, current_user: dict = Depends(require_role("PATIENT"))):
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            patient_id = get_patient_id(current_user["id"], cur)
+            # Update medicine
+            cur.execute(
+                "UPDATE medicines SET name = %s, strength = %s, quantity_in_stock = %s, form = %s WHERE id = %s AND patient_id = %s",
+                (payload.get("name"), payload.get("dosage"), payload.get("quantity", 0), payload.get("instructions", ""), medicine_id, patient_id)
+            )
+            # Recreate schedules
+            cur.execute("DELETE FROM medication_logs WHERE schedule_id IN (SELECT id FROM medication_schedules WHERE medicine_id = %s)", (medicine_id,))
+            cur.execute("DELETE FROM medication_schedules WHERE medicine_id = %s", (medicine_id,))
+            
+            import re
+            instr = payload.get("instructions", "")
+            times = []
+            m = re.match(r'^\[(.*?)\]', instr)
+            if m:
+                times = [t.strip() for t in m.group(1).split(",") if t.strip()]
+            for t in times:
+                cur.execute(
+                    "INSERT INTO medication_schedules (medicine_id, frequency, time_of_day, start_date, end_date) VALUES (%s, %s, %s, %s, %s)",
+                    (medicine_id, payload.get("frequency", "1"), f"{t}:00", payload.get("start_date"), payload.get("end_date") or None)
+                )
+            conn.commit()
+            return {"success": True}
+
+@router.delete("/{medicine_id}")
+def delete_medicine(medicine_id: str, current_user: dict = Depends(require_role("PATIENT"))):
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            patient_id = get_patient_id(current_user["id"], cur)
+            cur.execute("DELETE FROM medication_logs WHERE schedule_id IN (SELECT id FROM medication_schedules WHERE medicine_id = %s)", (medicine_id,))
+            cur.execute("DELETE FROM medication_schedules WHERE medicine_id = %s", (medicine_id,))
+            cur.execute("DELETE FROM medicines WHERE id = %s AND patient_id = %s", (medicine_id, patient_id))
+            conn.commit()
+            return {"success": True}
+
+@router.get("/")
+def get_medicines_unified(current_user: dict = Depends(require_role("PATIENT"))):
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            try:
+                patient_id = get_patient_id(current_user["id"], cur)
+            except HTTPException as e:
+                return []
+            
+            cur.execute("SELECT id, name, strength, quantity_in_stock, form FROM medicines WHERE patient_id = %s ORDER BY created_at DESC", (patient_id,))
+            medicines = cur.fetchall()
+            
+            result = []
+            for med in medicines:
+                med_dict = {
+                    "id": str(med[0]),
+                    "name": med[1],
+                    "dosage": med[2] or "",
+                    "quantity": med[3],
+                    "instructions": med[4] or "",
+                    "frequency": "1",
+                    "start_date": "",
+                    "end_date": ""
+                }
+                cur.execute("SELECT frequency, time_of_day, start_date, end_date FROM medication_schedules WHERE medicine_id = %s ORDER BY time_of_day", (med[0],))
+                schedules = cur.fetchall()
+                if schedules:
+                    med_dict["frequency"] = schedules[0][0]
+                    med_dict["start_date"] = str(schedules[0][2])
+                    med_dict["end_date"] = str(schedules[0][3]) if schedules[0][3] else ""
+                
+                result.append(med_dict)
+            return result

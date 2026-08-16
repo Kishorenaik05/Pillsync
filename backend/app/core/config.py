@@ -11,6 +11,13 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
+    # Gmail SMTP for email reminders
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""          # your Gmail address
+    SMTP_PASSWORD: str = ""      # Gmail App Password (not your real password)
+    EMAILS_FROM_NAME: str = "PillSync"
+
     model_config = SettingsConfigDict(env_file=".env")
 
 settings = Settings()
