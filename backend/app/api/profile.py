@@ -1,13 +1,12 @@
 import os
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
-from passlib.context import CryptContext
+from app.core.security import get_password_hash, verify_password
 from app.api.deps import require_role, get_current_active_user
 from app.api.medicines import get_patient_id
 from app.db.connection import get_db_connection
 
 router = APIRouter()
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 UPLOAD_DIR = "uploads/avatars"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -111,10 +110,10 @@ def change_password(payload: dict, current_user: dict = Depends(get_current_acti
         with conn.cursor() as cur:
             cur.execute("SELECT hashed_password FROM users WHERE id = %s", (current_user["id"],))
             row = cur.fetchone()
-            if not row or not pwd_context.verify(current_pw, row[0]):
+            if not row or not verify_password(current_pw, row[0]):
                 raise HTTPException(status_code=400, detail="Current password is incorrect")
 
-            new_hash = pwd_context.hash(new_pw)
+            new_hash = get_password_hash(new_pw)
             cur.execute("UPDATE users SET hashed_password = %s WHERE id = %s", (new_hash, current_user["id"]))
             conn.commit()
     return {"success": True}
