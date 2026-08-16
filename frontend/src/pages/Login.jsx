@@ -1,90 +1,126 @@
-import { useState, useContext } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
-import { Pill } from 'lucide-react';
+import { useState } from 'react'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
+import toast from 'react-hot-toast'
+import { MdEmail, MdLock, MdVisibility, MdVisibilityOff } from 'react-icons/md'
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const { login } = useContext(AuthContext);
-  const navigate = useNavigate();
+    const { login } = useAuth()
+    const navigate = useNavigate()
+    const location = useLocation()
+    const from = location.state?.from?.pathname || null
+    const [form, setForm] = useState({ email: '', password: '' })
+    const [showPass, setShowPass] = useState(false)
+    const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      setError('');
-      await login(email, password);
-      // Wait for auth context to update, but we can also decode token here to redirect immediately
-      // Actually AuthContext will trigger App.jsx re-render and handle redirect if we go to root
-      navigate('/'); 
-    } catch (err) {
-      setError('Invalid email or password');
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        setLoading(true)
+        try {
+            const loggedInUser = await login(form.email, form.password)
+            toast.success('Welcome back!')
+
+            if (from) {
+                navigate(from, { replace: true })
+                return
+            }
+
+            if (loggedInUser.role === 'admin') {
+                navigate('/admin/dashboard', { replace: true })
+            } else if (loggedInUser.role === 'caregiver') {
+                navigate('/caregiver/dashboard', { replace: true })
+            } else {
+                navigate('/app/dashboard', { replace: true })
+            }
+        } catch (err) {
+            toast.error(err?.response?.data?.detail || 'Login failed')
+        } finally {
+            setLoading(false)
+        }
     }
-  };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg border border-gray-100">
-        <div className="flex flex-col items-center">
-          <div className="bg-primary/10 p-3 rounded-full">
-            <Pill className="h-10 w-10 text-primary" />
-          </div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to PillSync
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Or{' '}
-            <Link to="/register" className="font-medium text-primary hover:text-primary/80">
-              create a new account
-            </Link>
-          </p>
+    return (
+        <div className="min-h-screen flex">
+            {/* Left panel */}
+            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary-900 via-violet-800 to-pink-700 flex-col justify-center items-center p-12 text-white relative overflow-hidden">
+                <div className="absolute top-10 left-10 w-48 h-48 bg-white/5 rounded-full blur-3xl" />
+                <div className="absolute bottom-10 right-10 w-64 h-64 bg-pink-500/10 rounded-full blur-3xl" />
+                <div className="relative text-center">
+                    <div className="w-20 h-20 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-5xl mb-6 mx-auto float shadow-xl">💊</div>
+                    <h2 className="text-4xl font-extrabold mb-4">Welcome Back!</h2>
+                    <p className="text-white/70 text-lg max-w-sm">
+                        Your health journey continues here. Sign in to manage your medications and stay on track.
+                    </p>
+                    <div className="mt-10 flex flex-wrap gap-3 justify-center">
+                        {['Smart Reminders 🔔', 'Push Notifications 💬', 'OCR Scanning 📄', 'Analytics 📊'].map(f => (
+                            <span key={f} className="bg-white/10 border border-white/20 backdrop-blur-sm rounded-full px-4 py-1.5 text-sm font-medium">{f}</span>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Right panel */}
+            <div className="flex-1 flex flex-col justify-center items-center p-8 bg-slate-50 dark:bg-dark-200">
+                <div className="w-full max-w-md">
+                    <Link to="/" className="flex items-center gap-2 mb-8">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center">
+                            <span className="text-white font-bold">P</span>
+                        </div>
+                        <span className="font-bold text-xl text-primary-700">PillSync</span>
+                    </Link>
+
+                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Sign In</h1>
+                    <p className="text-slate-500 mb-8">Enter your credentials to access your dashboard.</p>
+
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <div>
+                            <label className="label">Email Address</label>
+                            <div className="relative">
+                                <MdEmail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                <input
+                                    type="email"
+                                    value={form.email}
+                                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                                    className="input pl-10"
+                                    placeholder="you@example.com"
+                                    required
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <label className="label">Password</label>
+                            <div className="relative">
+                                <MdLock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                <input
+                                    type={showPass ? 'text' : 'password'}
+                                    value={form.password}
+                                    onChange={(e) => setForm({ ...form, password: e.target.value })}
+                                    className="input pl-10 pr-10"
+                                    placeholder="••••••••"
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPass(!showPass)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                >
+                                    {showPass ? <MdVisibilityOff size={18} /> : <MdVisibility size={18} />}
+                                </button>
+                            </div>
+                        </div>
+                        <button type="submit" disabled={loading} className="btn-primary w-full justify-center py-3">
+                            {loading ? (
+                                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            ) : 'Sign In'}
+                        </button>
+                    </form>
+
+                    <p className="mt-6 text-center text-sm text-slate-500">
+                        Don't have an account?{' '}
+                        <Link to="/register" className="text-primary-600 font-medium hover:underline">Create one</Link>
+                    </p>
+                </div>
+            </div>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded relative" role="alert">
-              <span className="block sm:inline">{error}</span>
-            </div>
-          )}
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="email-address" className="sr-only">Email address</label>
-              <input
-                id="email-address"
-                name="email"
-                type="email"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-                placeholder="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">Password</label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div>
-            <button
-              type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
-            >
-              Sign in
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
+    )
 }

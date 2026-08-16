@@ -11,8 +11,21 @@ from app.core.config import settings
 router = APIRouter()
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-def register(user_in: UserCreate):
-    hashed_password = get_password_hash(user_in.password)
+def register(user_in: dict):
+    name  = user_in.get("name", "")
+    email = user_in.get("email")
+    password = user_in.get("password")
+    role = user_in.get("role", "PATIENT").upper()
+
+    if not email or not password:
+        raise HTTPException(status_code=400, detail="email and password are required")
+
+    # Split full name into first / last
+    parts = (name or "").strip().split(" ", 1)
+    first_name = parts[0] or "User"
+    last_name  = parts[1] if len(parts) > 1 else ""
+
+    hashed_password = get_password_hash(password)
     with get_db_connection() as conn:
         with conn.cursor() as cur:
             try:
@@ -22,12 +35,26 @@ def register(user_in: UserCreate):
                     VALUES (%s, %s, %s)
                     RETURNING id, email, role, is_active, created_at, updated_at
                     """,
-                    (user_in.email, hashed_password, user_in.role.upper())
+                    (email, hashed_password, role)
                 )
                 new_user = cur.fetchone()
+                user_id = new_user[0]
+
+                # Auto-create patient profile with the name from registration
+                cur.execute(
+                    """
+                    INSERT INTO patient_profiles
+                        (user_id, first_name, last_name, date_of_birth, gender, blood_group, medical_history)
+                    VALUES (%s, %s, %s, '2000-01-01', 'Other', 'Unknown', '[]')
+                    ON CONFLICT (user_id) DO UPDATE
+                        SET first_name = EXCLUDED.first_name,
+                            last_name  = EXCLUDED.last_name
+                    """,
+                    (user_id, first_name, last_name)
+                )
                 conn.commit()
                 return {
-                    "id": new_user[0],
+                    "id": user_id,
                     "email": new_user[1],
                     "role": new_user[2],
                     "is_active": new_user[3],
@@ -43,6 +70,7 @@ def register(user_in: UserCreate):
             except Exception as e:
                 conn.rollback()
                 raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.post("/login", response_model=Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends()):
