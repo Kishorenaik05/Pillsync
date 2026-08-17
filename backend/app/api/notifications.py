@@ -1,4 +1,5 @@
 import smtplib
+import logging
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -7,6 +8,7 @@ from app.api.deps import get_current_active_user
 from app.core.config import settings
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.post("/test-email", status_code=200)
@@ -74,7 +76,20 @@ def send_test_email(current_user: dict = Depends(get_current_active_user)):
             server.starttls()
             server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
             server.sendmail(settings.SMTP_USER, [to_email], msg.as_string())
+    except smtplib.SMTPAuthenticationError as exc:
+        logger.error(f"SMTP Authentication failed: {exc}", exc_info=True)
+        raise HTTPException(
+            status_code=500, 
+            detail="SMTP Authentication failed. Ensure your App Password is correct."
+        )
+    except (TimeoutError, OSError) as exc:
+        logger.error(f"SMTP Timeout/OSError: {exc}", exc_info=True)
+        raise HTTPException(
+            status_code=500, 
+            detail="Connection to SMTP server timed out. Render might be blocking outbound SMTP on port 587. Consider using port 465, 2525, or an alternative provider."
+        )
     except Exception as exc:
+        logger.error(f"Failed to send email: {exc}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to send email: {str(exc)}")
 
     return {"status": "ok", "message": f"Test email sent to {to_email}"}

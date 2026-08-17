@@ -92,8 +92,12 @@ def _send_email(to_email: str, to_name: str, medicine_name: str, strength: str, 
             server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
             server.sendmail(settings.SMTP_USER, [to_email], msg.as_string())
         logger.info(f"Reminder email sent to {to_email} for medicine '{medicine_name}' at {reminder_time}")
+    except smtplib.SMTPAuthenticationError as exc:
+        logger.error(f"SMTP Auth error for {to_email}: {exc}", exc_info=True)
+    except (TimeoutError, OSError) as exc:
+        logger.error(f"SMTP Timeout error for {to_email}: {exc}. Render may be blocking this port.", exc_info=True)
     except Exception as exc:
-        logger.error(f"Failed to send reminder email to {to_email}: {exc}")
+        logger.error(f"Failed to send reminder email to {to_email}: {exc}", exc_info=True)
 
 
 def _check_and_send_reminders():
