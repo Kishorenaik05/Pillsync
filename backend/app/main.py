@@ -5,11 +5,16 @@ from contextlib import asynccontextmanager
 import os
 from app.api import auth, profiles, medicines, reminders, analytics, refills, profile, notifications
 from app.core.email_scheduler import start_email_scheduler
+from app.db.init_db import run_migrations
 
 _scheduler = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Run database migrations on startup
+    print("Running database migrations...")
+    run_migrations()
+    
     global _scheduler
     _scheduler = start_email_scheduler()
     yield
