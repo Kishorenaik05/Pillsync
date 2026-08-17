@@ -71,9 +71,8 @@ def send_test_email(current_user: dict = Depends(get_current_active_user)):
     msg.attach(MIMEText(html, "html"))
 
     try:
-        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
+        with smtplib.SMTP_SSL(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
             server.ehlo()
-            server.starttls()
             server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
             server.sendmail(settings.SMTP_USER, [to_email], msg.as_string())
     except smtplib.SMTPAuthenticationError as exc:

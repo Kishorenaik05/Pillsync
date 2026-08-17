@@ -86,9 +86,8 @@ def _send_email(to_email: str, to_name: str, medicine_name: str, strength: str, 
     msg.attach(MIMEText(html_body, "html"))
 
     try:
-        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
+        with smtplib.SMTP_SSL(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
             server.ehlo()
-            server.starttls()
             server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
             server.sendmail(settings.SMTP_USER, [to_email], msg.as_string())
         logger.info(f"Reminder email sent to {to_email} for medicine '{medicine_name}' at {reminder_time}")
