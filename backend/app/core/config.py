@@ -11,12 +11,16 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
-    # Gmail SMTP for email reminders
-    SMTP_HOST: str = "smtp.gmail.com"
-    SMTP_PORT: int = 587
-    SMTP_USER: str = ""          # your Gmail address
-    SMTP_PASSWORD: str = ""      # Gmail App Password (not your real password)
+    # Resend API (replaces direct SMTP — works on Render)
+    RESEND_API_KEY: str = ""
     EMAILS_FROM_NAME: str = "PillSync"
+    EMAILS_FROM_ADDRESS: str = "onboarding@resend.dev"
+
+    # Legacy SMTP fields (kept for backward compat, unused in production)
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 465
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
 
     model_config = SettingsConfigDict(env_file=".env")
 
