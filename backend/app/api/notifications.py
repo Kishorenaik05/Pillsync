@@ -1,7 +1,5 @@
-import smtplib
 import logging
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+import resend
 
 from fastapi import APIRouter, Depends, HTTPException
 from app.api.deps import get_current_active_user
@@ -14,15 +12,15 @@ logger = logging.getLogger(__name__)
 @router.post("/test-email", status_code=200)
 def send_test_email(current_user: dict = Depends(get_current_active_user)):
     """
-    Send a test email to the currently logged-in user's email address.
-    Returns 200 OK on success, 500 if SMTP fails, 404 if credentials not configured.
+    Send a test email to the currently logged-in user's email address via Resend.
     """
-    if not settings.SMTP_USER or settings.SMTP_USER == "your_gmail@gmail.com":
+    if not settings.RESEND_API_KEY:
         raise HTTPException(
             status_code=404,
-            detail="SMTP credentials not configured. Set SMTP_USER and SMTP_PASSWORD in your .env file."
+            detail="RESEND_API_KEY not configured. Add it to your Render environment variables."
         )
 
+    resend.api_key = settings.RESEND_API_KEY
     to_email = current_user["email"]
 
     html = f"""
@@ -64,32 +62,17 @@ def send_test_email(current_user: dict = Depends(get_current_active_user)):
 </html>
 """
 
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = "✅ PillSync — Email Notifications Working!"
-    msg["From"]    = f"{settings.EMAILS_FROM_NAME} <{settings.SMTP_USER}>"
-    msg["To"]      = to_email
-    msg.attach(MIMEText(html, "html"))
-
     try:
-        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
-            server.ehlo()
-            server.starttls()
-            server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-            server.sendmail(settings.SMTP_USER, [to_email], msg.as_string())
-    except smtplib.SMTPAuthenticationError as exc:
-        logger.error(f"SMTP Authentication failed: {exc}", exc_info=True)
-        raise HTTPException(
-            status_code=500, 
-            detail="SMTP Authentication failed. Ensure your App Password is correct."
+        params = resend.Emails.SendParams(
+            from_=f"{settings.EMAILS_FROM_NAME} <{settings.EMAILS_FROM_ADDRESS}>",
+            to=[to_email],
+            subject="✅ PillSync — Email Notifications Working!",
+            html=html,
         )
-    except (TimeoutError, OSError) as exc:
-        logger.error(f"SMTP Timeout/OSError: {exc}", exc_info=True)
-        raise HTTPException(
-            status_code=500, 
-            detail="Connection to SMTP server timed out. Render might be blocking outbound SMTP on port 587. Consider using port 465, 2525, or an alternative provider."
-        )
+        resend.Emails.send(params)
+        logger.info(f"Test email sent to {to_email} via Resend")
     except Exception as exc:
-        logger.error(f"Failed to send email: {exc}", exc_info=True)
+        logger.error(f"Resend email failed: {exc}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to send email: {str(exc)}")
 
     return {"status": "ok", "message": f"Test email sent to {to_email}"}

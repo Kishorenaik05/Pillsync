@@ -1,7 +1,5 @@
-import smtplib
 import logging
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+import resend
 from datetime import datetime, date, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 from app.db.connection import get_db_connection
@@ -73,29 +71,22 @@ def _build_html(user_name: str, medicine_name: str, strength: str, form: str, re
 
 def _send_email(to_email: str, to_name: str, medicine_name: str, strength: str, form: str, reminder_time: str):
     """Send a single reminder email via Gmail SMTP."""
-    if not settings.SMTP_USER or not settings.SMTP_PASSWORD:
-        logger.warning("SMTP credentials not configured — skipping email send.")
+    if not settings.RESEND_API_KEY:
+        logger.warning("RESEND_API_KEY not configured — skipping email send.")
         return
 
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = f"💊 PillSync Reminder: Take {medicine_name} at {reminder_time}"
-    msg["From"]    = f"{settings.EMAILS_FROM_NAME} <{settings.SMTP_USER}>"
-    msg["To"]      = to_email
-
+    resend.api_key = settings.RESEND_API_KEY
     html_body = _build_html(to_name or to_email, medicine_name, strength, form, reminder_time)
-    msg.attach(MIMEText(html_body, "html"))
 
     try:
-        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
-            server.ehlo()
-            server.starttls()
-            server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-            server.sendmail(settings.SMTP_USER, [to_email], msg.as_string())
+        params = resend.Emails.SendParams(
+            from_=f"{settings.EMAILS_FROM_NAME} <{settings.EMAILS_FROM_ADDRESS}>",
+            to=[to_email],
+            subject=f"💊 PillSync Reminder: Take {medicine_name} at {reminder_time}",
+            html=html_body,
+        )
+        resend.Emails.send(params)
         logger.info(f"Reminder email sent to {to_email} for medicine '{medicine_name}' at {reminder_time}")
-    except smtplib.SMTPAuthenticationError as exc:
-        logger.error(f"SMTP Auth error for {to_email}: {exc}", exc_info=True)
-    except (TimeoutError, OSError) as exc:
-        logger.error(f"SMTP Timeout error for {to_email}: {exc}. Render may be blocking this port.", exc_info=True)
     except Exception as exc:
         logger.error(f"Failed to send reminder email to {to_email}: {exc}", exc_info=True)
 
