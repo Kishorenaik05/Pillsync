@@ -6,9 +6,22 @@ headers = {
     'Accept': 'application/json'
 }
 
-# Get full service details to see branch / build command
-req = urllib.request.Request('https://api.render.com/v1/services/srv-da0u89h5efls73agps80', headers=headers)
+req = urllib.request.Request(
+    'https://api.render.com/v1/services/srv-da0u89h5efls73agps80/env-vars',
+    headers=headers
+)
 with urllib.request.urlopen(req, context=ctx) as r:
     data = json.loads(r.read())
-    svc = data.get('service', data)  # handle both wrapper and flat
-    print(json.dumps(data, indent=2))
+
+with open('render_envvars.txt', 'w') as f:
+    for item in data:
+        ev = item.get('envVar', item)
+        key = ev.get('key', '')
+        val = ev.get('value', '')
+        if any(s in key.upper() for s in ['KEY', 'PASSWORD', 'SECRET']):
+            masked = val[:4] + '****' if val else '(empty)'
+        else:
+            masked = val
+        f.write(key + ' = ' + masked + '\n')
+
+print(open('render_envvars.txt').read())

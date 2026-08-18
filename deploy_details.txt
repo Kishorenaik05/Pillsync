@@ -1,0 +1,14 @@
+﻿{
+  "id": "dep-da2756j7uimc73djm700",
+  "commit": {
+    "id": "3955d17b484c46c5ee8dfdf66e6ae1ccd19cc8d2",
+    "message": "fix(startup): wrap lifespan and StaticFiles in try/except to prevent update_failed on Render",
+    "createdAt": "2026-08-18T14:56:21Z"
+  },
+  "status": "update_failed",
+  "trigger": "new_commit",
+  "createdAt": "2026-08-18T14:56:26.393401Z",
+  "updatedAt": "2026-08-18T14:57:09.714513Z",
+  "startedAt": "2026-08-18T14:56:26.194085Z",
+  "finishedAt": "2026-08-18T14:57:09.712783Z"
+}

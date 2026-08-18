@@ -1,0 +1,24 @@
+﻿ID: dep-da2777flk1mc73auf9r0
+Status: update_failed
+Commit: fix(startup): wrap lifespan and StaticFiles in try/except to prevent update_fail
+Created: 2026-08-18T15:00:45.426531Z
+Started: 2026-08-18T15:00:45.378941Z | Finished: 2026-08-18T15:01:41.533039Z
+
+ID: dep-da2756j7uimc73djm700
+Status: update_failed
+Commit: fix(startup): wrap lifespan and StaticFiles in try/except to prevent update_fail
+Created: 2026-08-18T14:56:26.393401Z
+Started: 2026-08-18T14:56:26.194085Z | Finished: 2026-08-18T14:57:09.712783Z
+
+ID: dep-da272rlbedkc73dg9do0
+Status: update_failed
+Commit: fix(startup): make DB migration errors non-fatal so app starts even if DB init f
+Created: 2026-08-18T14:51:29.078773Z
+Started: 2026-08-18T14:51:28.852229Z | Finished: 2026-08-18T14:52:11.929037Z
+
+ID: dep-da2700oae00c73c8aip0
+Status: update_failed
+Commit: fix(startup): make DB migration errors non-fatal so app starts even if DB init f
+Created: 2026-08-18T14:45:24.128951Z
+Started: 2026-08-18T14:45:23.893283Z | Finished: 2026-08-18T14:46:48.282351Z
+

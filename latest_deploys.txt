@@ -1,0 +1,15 @@
+﻿ID: dep-da2700oae00c73c8aip0
+Status: update_failed
+Commit: fix(startup): make DB migration errors non-fatal so app starts even if DB init f
+Created: 2026-08-18T14:45:24.128951Z
+
+ID: dep-da26ugoae00c73c88rug
+Status: build_failed
+Commit: fix(deploy): use psycopg2-binary to fix Render build failure (no libpq-dev on ho
+Created: 2026-08-18T14:42:11.307284Z
+
+ID: dep-da26su5g1s2s73c754e0
+Status: update_failed
+Commit: merge: bring Resend email integration from milestone_04 into main for Render dep
+Created: 2026-08-18T14:38:48.868962Z
+

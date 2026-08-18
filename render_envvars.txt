@@ -1,0 +1,15 @@
+EMAILS_FROM_ADDRESS = onboarding@resend.dev
+RESEND_API_KEY = re_t****
+SECRET_KEY = a_ve****
+ALGORITHM = HS256
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+SMTP_HOST = smtp.gmail.com
+SMTP_PORT = 465
+SMTP_USER = ramavathkishorenaik333@gmail.com
+SMTP_PASSWORD = vfve****
+EMAILS_FROM_NAME = PillSync
+DB_HOST = dpg-da0v9ufqj5pc73bc4340-a
+DB_PORT = 5432
+DB_NAME = pillsync
+DB_USER = pillsync_user
+DB_PASSWORD = rWeK****

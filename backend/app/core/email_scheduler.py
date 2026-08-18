@@ -79,20 +79,13 @@ def _send_email(to_email: str, to_name: str, medicine_name: str, strength: str, 
     html_body = _build_html(to_name or to_email, medicine_name, strength, form, reminder_time)
 
     try:
-<<<<<<< HEAD
-        with smtplib.SMTP_SSL(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
-            server.ehlo()
-            server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-            server.sendmail(settings.SMTP_USER, [to_email], msg.as_string())
-=======
-        params = resend.Emails.SendParams(
-            from_=f"{settings.EMAILS_FROM_NAME} <{settings.EMAILS_FROM_ADDRESS}>",
-            to=[to_email],
-            subject=f"💊 PillSync Reminder: Take {medicine_name} at {reminder_time}",
-            html=html_body,
-        )
+        params = {
+            "from": f"{settings.EMAILS_FROM_NAME} <{settings.EMAILS_FROM_ADDRESS}>",
+            "to": [to_email],
+            "subject": f"💊 PillSync Reminder: Take {medicine_name} at {reminder_time}",
+            "html": html_body,
+        }
         resend.Emails.send(params)
->>>>>>> milestone_04
         logger.info(f"Reminder email sent to {to_email} for medicine '{medicine_name}' at {reminder_time}")
     except Exception as exc:
         logger.error(f"Failed to send reminder email to {to_email}: {exc}", exc_info=True)

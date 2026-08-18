@@ -1,0 +1,11 @@
+﻿fastapi
+uvicorn[standard]
+psycopg2
+pydantic
+pydantic-settings
+email-validator
+python-jose[cryptography]
+bcrypt
+python-multipart
+pytest
+APScheduler
