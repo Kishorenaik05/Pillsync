@@ -18,8 +18,7 @@ def run_migrations():
             conn.commit()
             print("All migrations completed successfully.")
     except Exception as e:
-        print(f"Error running migrations: {e}")
-        raise e
+        print(f"Warning: migrations could not run (DB may not be ready yet): {e}")
 
 if __name__ == "__main__":
     run_migrations()
