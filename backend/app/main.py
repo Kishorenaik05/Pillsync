@@ -11,21 +11,35 @@ _scheduler = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Run database migrations on startup
-    print("Running database migrations...")
-    run_migrations()
-    
+    # Run database migrations on startup (non-fatal)
+    try:
+        print("Running database migrations...")
+        run_migrations()
+    except Exception as e:
+        print(f"Warning: migration error (non-fatal): {e}")
+
     global _scheduler
-    _scheduler = start_email_scheduler()
+    try:
+        _scheduler = start_email_scheduler()
+    except Exception as e:
+        print(f"Warning: scheduler start error (non-fatal): {e}")
+
     yield
+
     if _scheduler:
-        _scheduler.shutdown(wait=False)
+        try:
+            _scheduler.shutdown(wait=False)
+        except Exception:
+            pass
 
 app = FastAPI(title="PillSync API", version="1.0.0", lifespan=lifespan)
 
 # Serve uploaded avatar images
-os.makedirs("uploads/avatars", exist_ok=True)
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+try:
+    os.makedirs("uploads/avatars", exist_ok=True)
+    app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+except Exception as e:
+    print(f"Warning: Could not mount uploads directory: {e}")
 
 app.add_middleware(
     CORSMiddleware,
