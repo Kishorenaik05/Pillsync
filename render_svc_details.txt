@@ -1,0 +1,52 @@
+﻿{
+  "autoDeploy": "yes",
+  "autoDeployTrigger": "commit",
+  "branch": "main",
+  "createdAt": "2026-08-16T16:24:06.612737Z",
+  "dashboardUrl": "https://dashboard.render.com/web/srv-da0u89h5efls73agps80",
+  "environmentId": "evm-da0u89ajnfac73eg3npg",
+  "id": "srv-da0u89h5efls73agps80",
+  "name": "Pillsync",
+  "notifyOnFail": "default",
+  "ownerId": "tea-da0u20nlk1mc738posq0",
+  "repo": "https://github.com/Kishorenaik05/Pillsync",
+  "rootDir": "backend",
+  "serviceDetails": {
+    "buildPlan": "starter",
+    "cache": {
+      "profile": "no-cache"
+    },
+    "env": "python",
+    "envSpecificDetails": {
+      "buildCommand": "pip install -r requirements.txt",
+      "startCommand": "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    },
+    "healthCheckPath": "",
+    "ipAllowList": [
+      {
+        "cidrBlock": "0.0.0.0/0",
+        "description": "everywhere"
+      }
+    ],
+    "maintenanceMode": {
+      "enabled": false,
+      "uri": ""
+    },
+    "numInstances": 1,
+    "openPorts": null,
+    "plan": "free",
+    "previews": {
+      "generation": "off"
+    },
+    "pullRequestPreviewsEnabled": "no",
+    "region": "oregon",
+    "runtime": "python",
+    "sshAddress": "srv-da0u89h5efls73agps80@ssh.oregon.render.com",
+    "url": "https://pillsync-fyyf.onrender.com"
+  },
+  "slug": "pillsync-fyyf",
+  "suspended": "not_suspended",
+  "suspenders": [],
+  "type": "web_service",
+  "updatedAt": "2026-08-17T06:30:45.184562Z"
+}

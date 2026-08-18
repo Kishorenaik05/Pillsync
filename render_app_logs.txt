@@ -1,0 +1,17 @@
+﻿RAW OWNERS: [{"cursor":"8YuBpe0wwmgyMG5sazFtYzczOHBvc3Ew","owner":{"email":"324103383058@gvpce.ac.in","id":"tea-da0u20nlk1mc738posq0","name":"My Workspace","type":"team"}}]
+
+
+Owner ID: tea-da0u20nlk1mc738posq0
+
+URL: https://api.render.com/v1/logs?ownerId=tea-da0u20nlk1mc738posq0&resource=srv-da0u89h5efls73agps80&startTime=2026-08-18T08:35:33Z&endTime=2026-08-18T14:35:33Z&limit=100
+RAW RESPONSE (first 2000 chars): {"hasMore":false,"logs":null,"nextEndTime":"2026-08-18T14:35:33Z","nextStartTime":"2026-08-18T08:35:33Z"}
+
+KEYS: ['hasMore', 'logs', 'nextEndTime', 'nextStartTime']
+
+hasMore: False
+
+logs: None
+
+nextEndTime: 2026-08-18T14:35:33Z
+
+nextStartTime: 2026-08-18T08:35:33Z

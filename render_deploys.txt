@@ -1,0 +1,87 @@
+﻿[
+    {
+        "deploy":  {
+                       "id":  "dep-da1aq1dg1s2s73c49ru0",
+                       "commit":  {
+                                      "id":  "bff96b811adf711310a67a2d7515d7fc8b25b7a1",
+                                      "message":  "fix(email): switch from SMTP to Resend API to bypass Render outbound port blocking",
+                                      "createdAt":  "2026-08-17T06:41:05Z"
+                                  },
+                       "status":  "update_failed",
+                       "trigger":  "new_commit",
+                       "createdAt":  "2026-08-17T06:41:09.540936Z",
+                       "updatedAt":  "2026-08-17T06:41:58.926957Z",
+                       "startedAt":  "2026-08-17T06:41:09.501391Z",
+                       "finishedAt":  "2026-08-17T06:41:58.926443Z"
+                   },
+        "cursor":  "EjivFV4dqUBxMWRnMXMyczczYzQ5cnUw"
+    },
+    {
+        "deploy":  {
+                       "id":  "dep-da1aknu1egvs73ac0g0g",
+                       "commit":  {
+                                      "id":  "b17a84c5e5f403dce0c41245d819edd86943f2ff",
+                                      "message":  "fix(smtp): switch to SMTP_SSL on port 465 to bypass Render port 587 blocking",
+                                      "createdAt":  "2026-08-17T06:26:27Z"
+                                  },
+                       "status":  "live",
+                       "trigger":  "manual",
+                       "createdAt":  "2026-08-17T06:29:51.296833Z",
+                       "updatedAt":  "2026-08-18T06:55:43.430127Z",
+                       "startedAt":  "2026-08-17T06:29:51.265088Z",
+                       "finishedAt":  "2026-08-17T06:30:45.183071Z"
+                   },
+        "cursor":  "EjivFV4dqUBrbnUxZWd2czczYWMwZzBn"
+    },
+    {
+        "deploy":  {
+                       "id":  "dep-da1aj5tg1s2s73c45m20",
+                       "commit":  {
+                                      "id":  "b17a84c5e5f403dce0c41245d819edd86943f2ff",
+                                      "message":  "fix(smtp): switch to SMTP_SSL on port 465 to bypass Render port 587 blocking",
+                                      "createdAt":  "2026-08-17T06:26:27Z"
+                                  },
+                       "status":  "deactivated",
+                       "trigger":  "new_commit",
+                       "createdAt":  "2026-08-17T06:26:31.972779Z",
+                       "updatedAt":  "2026-08-17T06:30:45.18215Z",
+                       "startedAt":  "2026-08-17T06:26:31.929759Z",
+                       "finishedAt":  "2026-08-17T06:27:21.257996Z"
+                   },
+        "cursor":  "EjivFV4dqUBqNXRnMXMyczczYzQ1bTIw"
+    },
+    {
+        "deploy":  {
+                       "id":  "dep-da1ah1navr4c73fl2eug",
+                       "commit":  {
+                                      "id":  "cc77b2c68271cf59fa4ff30372841a529155aad9",
+                                      "message":  "fix(notifications): add comprehensive logging and improved error responses for SMTP tests",
+                                      "createdAt":  "2026-08-17T06:19:50Z"
+                                  },
+                       "status":  "deactivated",
+                       "trigger":  "new_commit",
+                       "createdAt":  "2026-08-17T06:21:58.720421Z",
+                       "updatedAt":  "2026-08-17T06:27:21.256712Z",
+                       "startedAt":  "2026-08-17T06:21:58.698286Z",
+                       "finishedAt":  "2026-08-17T06:22:48.994228Z"
+                   },
+        "cursor":  "EjivFV4dqUBoMW5hdnI0YzczZmwyZXVn"
+    },
+    {
+        "deploy":  {
+                       "id":  "dep-da1a8215efls73dti6v0",
+                       "commit":  {
+                                      "id":  "d41e433468f2ffe1847538338d511fc94ceffc16",
+                                      "message":  "fix(db): add init_db.py to run migrations on startup in production",
+                                      "createdAt":  "2026-08-17T06:02:39Z"
+                                  },
+                       "status":  "deactivated",
+                       "trigger":  "new_commit",
+                       "createdAt":  "2026-08-17T06:02:48.403933Z",
+                       "updatedAt":  "2026-08-17T06:22:48.993255Z",
+                       "startedAt":  "2026-08-17T06:02:48.36289Z",
+                       "finishedAt":  "2026-08-17T06:03:37.274542Z"
+                   },
+        "cursor":  "EjivFV4dqUA4MjE1ZWZsczczZHRpNnYw"
+    }
+]
